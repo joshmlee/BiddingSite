@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Manage Properties — Admin{% endblock %}
+
+{% block nav_links %}
+  <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+  <a href="{{ url_for('relay') }}">Relay View</a>
+  <a href="{{ url_for('admin_logout') }}">Sign Out</a>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1 class="page-title">Manage Properties</h1>
+
+  <!-- CSV upload -->
+  <div class="add-form">
+    <div class="add-form-title">Import from CSV</div>
+    <p style="font-size:0.85rem;color:#6b7280;margin-bottom:0.85rem">
+      CSV columns: <code>address</code>, <code>parcel_number</code>,
+      <code>description</code>, <code>starting_bid</code>
+      &nbsp;(only <code>address</code> is required).
+    </p>
+    <form method="POST" action="{{ url_for('admin_upload_properties') }}"
+          enctype="multipart/form-data">
+      <div class="form-row">
+        <div class="form-group" style="flex:2">
+          <label>CSV File</label>
+          <input type="file" name="csv_file" accept=".csv" required
+                 style="padding:0.4rem 0.75rem">
+        </div>
+        <div style="padding-top:1.6rem">
+          <button type="submit" class="btn btn-primary">Upload &amp; Import</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Manual add -->
+  <div class="add-form">
+    <div class="add-form-title">Add Single Property</div>
+    <form method="POST" action="{{ url_for('admin_add_property') }}">
+      <div class="form-row">
+        <div class="form-group" style="flex:3">
+          <label>Address</label>
+          <input type="text" name="address" placeholder="123 Main St, City, MN" required>
+        </div>
+        <div class="form-group">
+          <label>Parcel #</label>
+          <input type="text" name="parcel_number" placeholder="Optional">
+        </div>
+        <div class="form-group" style="max-width:150px">
+          <label>Starting Bid ($)</label>
+          <input type="number" name="starting_bid" value="0" min="0" step="1">
+        </div>
+        <div style="padding-top:1.6rem">
+          <button type="submit" class="btn btn-success">Add</button>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:0.5rem">
+        <label>Description (optional)</label>
+        <input type="text" name="description" placeholder="Brief notes about the property">
+      </div>
+    </form>
+  </div>
+
+  <!-- Properties table -->
+  {% if properties %}
+    <div class="table-wrap card" style="padding:0;overflow:hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Address</th>
+            <th>Parcel #</th>
+            <th>Starting Bid</th>
+            <th>Status</th>
+            <th>Added</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in properties %}
+          <tr>
+            <td>
+              <strong>{{ p.address }}</strong>
+              {% if p.description %}
+                <br><span style="font-size:0.8rem;color:#6b7280">{{ p.description }}</span>
+              {% endif %}
+            </td>
+            <td>{{ p.parcel_number or '—' }}</td>
+            <td>${{ '{:,.2f}'.format(p.starting_bid) }}</td>
+            <td>
+              {% if p.active %}
+                <span class="badge badge-green">Active</span>
+              {% else %}
+                <span class="badge badge-yellow">Inactive</span>
+              {% endif %}
+            </td>
+            <td style="font-size:0.82rem;color:#6b7280">{{ p.created_at[:10] }}</td>
+            <td>
+              <form method="POST"
+                    action="{{ url_for('admin_toggle_property', prop_id=p.id) }}"
+                    style="display:inline">
+                <button type="submit" class="btn btn-sm btn-secondary">
+                  {% if p.active %}Deactivate{% else %}Activate{% endif %}
+                </button>
+              </form>
+              <form method="POST"
+                    action="{{ url_for('admin_delete_property', prop_id=p.id) }}"
+                    style="display:inline"
+                    onsubmit="return confirm('Delete this property and all its bids?')">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card" style="text-align:center;padding:2.5rem;color:#6b7280">
+      No properties yet. Upload a CSV or add one manually above.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

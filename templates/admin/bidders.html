@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Manage Bidders — Admin{% endblock %}
+
+{% block nav_links %}
+  <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+  <a href="{{ url_for('relay') }}">Relay View</a>
+  <a href="{{ url_for('admin_logout') }}">Sign Out</a>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1 class="page-title">Manage Bidders</h1>
+
+  <!-- Add bidder form -->
+  <div class="add-form">
+    <div class="add-form-title">Add New Bidder</div>
+    <form method="POST" action="{{ url_for('admin_add_bidder') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="name" placeholder="Jane Smith" required>
+        </div>
+        <div class="form-group" style="max-width:130px">
+          <label>Paddle #</label>
+          <input type="text" name="paddle_number" placeholder="42" required>
+        </div>
+        <div class="form-group" style="max-width:130px">
+          <label>PIN</label>
+          <input type="text" name="pin" placeholder="4-digit PIN" required>
+        </div>
+        <div class="check-group">
+          <input type="checkbox" id="deposit_confirmed" name="deposit_confirmed">
+          <label for="deposit_confirmed">Deposit confirmed</label>
+        </div>
+        <div style="padding-top:1.6rem">
+          <button type="submit" class="btn btn-success">Add Bidder</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Bidder table -->
+  {% if bidders %}
+    <div class="table-wrap card" style="padding:0;overflow:hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Paddle #</th>
+            <th>Name</th>
+            <th>Deposit</th>
+            <th>Registered</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bidders %}
+          <tr>
+            <td><strong>{{ b.paddle_number }}</strong></td>
+            <td>{{ b.name }}</td>
+            <td>
+              {% if b.deposit_confirmed %}
+                <span class="badge badge-green">Confirmed</span>
+              {% else %}
+                <span class="badge badge-red">Pending</span>
+              {% endif %}
+            </td>
+            <td style="font-size:0.82rem;color:#6b7280">{{ b.created_at[:10] }}</td>
+            <td>
+              <form method="POST"
+                    action="{{ url_for('admin_toggle_bidder', bidder_id=b.id) }}"
+                    style="display:inline">
+                <button type="submit" class="btn btn-sm btn-secondary">
+                  {% if b.deposit_confirmed %}Unconfirm{% else %}Confirm{% endif %}
+                </button>
+              </form>
+              <form method="POST"
+                    action="{{ url_for('admin_delete_bidder', bidder_id=b.id) }}"
+                    style="display:inline"
+                    onsubmit="return confirm('Remove {{ b.name }}?')">
+                <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card" style="text-align:center;padding:2.5rem;color:#6b7280">
+      No bidders registered yet. Add one above.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

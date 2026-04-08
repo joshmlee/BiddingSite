@@ -1,0 +1,467 @@
+/* =====================================================================
+   Auction Bidding Site — Global Styles
+   ===================================================================== */
+
+:root {
+  --navy:   #1a3a5c;
+  --gold:   #c8a04a;
+  --gold-light: #f0d88a;
+  --green:  #1e8a3e;
+  --red:    #c0392b;
+  --bg:     #f0f2f5;
+  --card:   #ffffff;
+  --text:   #1c1c1e;
+  --muted:  #6b7280;
+  --border: #d1d5db;
+  --radius: 10px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ---- Nav ---- */
+.navbar {
+  background: var(--navy);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+.navbar .brand {
+  color: var(--gold);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+.navbar .nav-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.navbar .nav-links a {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.15s;
+}
+.navbar .nav-links a:hover { color: #fff; }
+.navbar .nav-user {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+/* ---- Page wrapper ---- */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+}
+
+/* ---- Page headings ---- */
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 1.5rem;
+}
+
+/* ---- Flash messages ---- */
+.flash-list { list-style: none; margin-bottom: 1.25rem; }
+.flash {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  background: #fef3c7;
+  border-left: 4px solid var(--gold);
+  color: #78350f;
+}
+
+/* ---- Cards ---- */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1.1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 0.15s, opacity 0.15s;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn-primary   { background: var(--navy);  color: #fff; }
+.btn-gold      { background: var(--gold);  color: #fff; }
+.btn-success   { background: var(--green); color: #fff; }
+.btn-danger    { background: var(--red);   color: #fff; }
+.btn-secondary { background: #6b7280;      color: #fff; }
+.btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+
+/* ---- Forms ---- */
+.form-group { margin-bottom: 1rem; }
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+input[type=text], input[type=password], input[type=number],
+input[type=email], select, textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(26,58,92,0.12);
+}
+
+/* ---- Login page ---- */
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 56px);
+  padding: 2rem 1rem;
+}
+.login-box {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+}
+.login-box h1 {
+  font-size: 1.5rem;
+  color: var(--navy);
+  margin-bottom: 0.25rem;
+}
+.login-box .subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.75rem;
+}
+
+/* ---- Property grid (bidder view) ---- */
+.prop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+.prop-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.prop-card-header {
+  background: var(--navy);
+  color: #fff;
+  padding: 0.85rem 1.1rem;
+}
+.prop-card-header .address {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.prop-card-header .parcel {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+.prop-card-body { padding: 1rem 1.1rem; flex: 1; }
+.bid-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.bid-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+.bid-amount {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--green);
+}
+.bid-amount.no-bids { color: var(--muted); font-size: 1.1rem; }
+.bid-by { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.85rem; }
+.prop-card-footer {
+  padding: 0.85rem 1.1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.prop-card-footer input[type=number] { flex: 1; }
+
+/* ---- Relay view ---- */
+.relay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.relay-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+.relay-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.relay-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+.relay-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.relay-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border-left: 5px solid var(--navy);
+  padding: 1.1rem 1.25rem;
+}
+.relay-card.has-bids { border-left-color: var(--green); }
+.relay-card .r-address {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 2px;
+}
+.relay-card .r-parcel {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+.relay-card .r-bid-amount {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--green);
+  line-height: 1;
+}
+.relay-card .r-bid-amount.no-bids {
+  font-size: 1.4rem;
+  color: var(--muted);
+}
+.relay-card .r-bidder {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-top: 0.3rem;
+}
+.relay-card .r-paddle {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.relay-card .r-starting {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+
+/* Recent activity feed */
+.activity-section { margin-top: 1rem; }
+.activity-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.75rem;
+}
+.activity-list { list-style: none; }
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+  background: var(--card);
+  font-size: 0.88rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.activity-item .a-amount { font-weight: 800; color: var(--green); }
+.activity-item .a-meta   { color: var(--muted); font-size: 0.8rem; }
+
+/* ---- Admin tables ---- */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+thead th {
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+tbody tr:nth-child(even) { background: #f8fafc; }
+tbody td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tbody tr:hover { background: #eff6ff; }
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.badge-green  { background: #d1fae5; color: #065f46; }
+.badge-red    { background: #fee2e2; color: #991b1b; }
+.badge-yellow { background: #fef3c7; color: #92400e; }
+
+/* Admin dashboard stat cards */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  text-align: center;
+  border-top: 4px solid var(--gold);
+}
+.stat-card .stat-num {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--navy);
+  line-height: 1;
+}
+.stat-card .stat-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 0.35rem;
+}
+
+/* Admin quick links */
+.admin-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.admin-link-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  text-decoration: none;
+  color: var(--navy);
+  border-left: 4px solid var(--navy);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.admin-link-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.admin-link-card .link-title { font-weight: 700; font-size: 1rem; }
+.admin-link-card .link-desc  { font-size: 0.82rem; color: var(--muted); margin-top: 0.25rem; }
+
+/* Section divider */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.75rem 0;
+}
+
+/* Add-form row */
+.add-form {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.add-form-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 1rem;
+}
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+.form-row .form-group { margin-bottom: 0; flex: 1; min-width: 140px; }
+
+/* Checkbox inline */
+.check-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-top: 1.6rem;
+}
+.check-group input[type=checkbox] { width: auto; }
+.check-group label {
+  font-size: 0.9rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  margin-bottom: 0;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .relay-card .r-bid-amount { font-size: 1.8rem; }
+  .prop-grid, .relay-grid   { grid-template-columns: 1fr; }
+  .form-row                 { flex-direction: column; }
+}

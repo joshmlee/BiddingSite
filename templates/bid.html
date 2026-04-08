@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Place Bids — Auction{% endblock %}
+
+{% block nav_links %}
+  <span class="nav-user">
+    {{ session.bidder_name }} &mdash; Paddle #{{ session.paddle_number }}
+  </span>
+  <a href="{{ url_for('logout') }}">Sign Out</a>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1 class="page-title">Active Properties</h1>
+
+  {% if properties %}
+    <div class="prop-grid">
+      {% for item in properties %}
+        {% set prop    = item.property %}
+        {% set top_bid = item.top_bid %}
+        <div class="prop-card">
+          <div class="prop-card-header">
+            <div class="address">{{ prop.address }}</div>
+            {% if prop.parcel_number %}
+              <div class="parcel">Parcel #{{ prop.parcel_number }}</div>
+            {% endif %}
+          </div>
+
+          <div class="prop-card-body">
+            {% if prop.description %}
+              <p style="font-size:0.85rem;color:#6b7280;margin-bottom:0.75rem">
+                {{ prop.description }}
+              </p>
+            {% endif %}
+
+            <div class="bid-row">
+              <span class="bid-label">Current High Bid</span>
+              {% if top_bid %}
+                <span class="bid-amount">${{ '{:,.2f}'.format(top_bid.amount) }}</span>
+              {% else %}
+                <span class="bid-amount no-bids">No bids yet</span>
+              {% endif %}
+            </div>
+
+            {% if top_bid %}
+              <p class="bid-by">
+                High bidder: Paddle #{{ top_bid.paddle_number }}
+                {% if top_bid.paddle_number == session.paddle_number %}
+                  <strong style="color:var(--green)">(You)</strong>
+                {% endif %}
+              </p>
+            {% endif %}
+
+            <p style="font-size:0.8rem;color:#6b7280;">
+              Starting bid: ${{ '{:,.2f}'.format(prop.starting_bid) }}
+            </p>
+          </div>
+
+          <div class="prop-card-footer">
+            <form method="POST" action="{{ url_for('submit_bid') }}"
+                  style="display:flex;gap:0.5rem;width:100%;align-items:center">
+              <input type="hidden" name="property_id" value="{{ prop.id }}">
+              <input type="number" name="amount" step="1" min="1"
+                     placeholder="Your bid ($)"
+                     style="flex:1"
+                     required>
+              <button type="submit" class="btn btn-gold">Bid</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card" style="text-align:center;padding:3rem;color:#6b7280;">
+      <p style="font-size:1.1rem">No active properties at this time.</p>
+      <p style="font-size:0.85rem;margin-top:0.5rem">
+        Check back once the auction begins.
+      </p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

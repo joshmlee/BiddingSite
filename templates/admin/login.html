@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Admin Login — Auction{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-box">
+    <h1>Admin Access</h1>
+    <p class="subtitle">Enter the admin password to continue.</p>
+
+    <form method="POST">
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password"
+               placeholder="Admin password" required autofocus>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem">
+        Sign In
+      </button>
+    </form>
+
+    <p style="margin-top:1.5rem;text-align:center">
+      <a href="{{ url_for('login') }}" style="font-size:0.85rem;color:#6b7280">
+        &larr; Back to bidder login
+      </a>
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — Auction{% endblock %}
+
+{% block nav_links %}
+  <a href="{{ url_for('relay') }}">Relay View</a>
+  <a href="{{ url_for('admin_logout') }}">Sign Out</a>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1 class="page-title">Admin Dashboard</h1>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num">{{ bidder_count }}</div>
+      <div class="stat-label">Registered Bidders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{{ property_count }}</div>
+      <div class="stat-label">Properties</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{{ bid_count }}</div>
+      <div class="stat-label">Total Bids</div>
+    </div>
+  </div>
+
+  <div class="admin-links">
+    <a class="admin-link-card" href="{{ url_for('admin_bidders') }}">
+      <div class="link-title">Manage Bidders</div>
+      <div class="link-desc">Add, verify, or remove bidders</div>
+    </a>
+    <a class="admin-link-card" href="{{ url_for('admin_properties') }}">
+      <div class="link-title">Manage Properties</div>
+      <div class="link-desc">Upload CSV or add properties manually</div>
+    </a>
+    <a class="admin-link-card" href="{{ url_for('relay') }}">
+      <div class="link-title">Relay View</div>
+      <div class="link-desc">Live bid dashboard for the auctioneer relay</div>
+    </a>
+  </div>
+</div>
+{% endblock %}

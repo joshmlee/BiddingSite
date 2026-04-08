@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Relay View — Live Bids{% endblock %}
+
+{% block nav_links %}
+  <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+  <a href="{{ url_for('admin_logout') }}">Sign Out</a>
+{% endblock %}
+
+{% block head %}
+<style>
+  /* Extra large text for relay use */
+  body { background: #0f1f33; }
+  .navbar { background: #0a1520; }
+  .relay-title { color: #fff; }
+  .relay-status { color: #94a3b8; }
+  .relay-card { background: #1a2e45; border-radius: 10px; color: #fff; }
+  .relay-card .r-address { color: #e2e8f0; }
+  .relay-card .r-parcel  { color: #64748b; }
+  .relay-card .r-bid-amount { color: #4ade80; }
+  .relay-card .r-bid-amount.no-bids { color: #475569; }
+  .relay-card .r-bidder  { color: #93c5fd; }
+  .relay-card .r-paddle  { color: #64748b; }
+  .relay-card .r-starting { color: #475569; }
+  .activity-section .activity-title { color: #e2e8f0; }
+  .activity-item { background: #1a2e45; color: #e2e8f0; }
+  .activity-item .a-meta { color: #64748b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="relay-header">
+    <h1 class="relay-title">LIVE RELAY VIEW</h1>
+    <div class="relay-status">
+      <div class="relay-dot"></div>
+      <span id="last-updated">Connecting&hellip;</span>
+    </div>
+  </div>
+
+  <div class="relay-grid" id="relay-grid">
+    <p style="color:#64748b">Loading&hellip;</p>
+  </div>
+
+  <div class="activity-section">
+    <h2 class="activity-title">Recent Bid Activity</h2>
+    <ul class="activity-list" id="activity-list">
+      <li style="color:#64748b;padding:0.5rem">Loading&hellip;</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function fmt(n) {
+  return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function renderGrid(data) {
+  const grid = document.getElementById('relay-grid');
+  if (!data.properties.length) {
+    grid.innerHTML = '<p style="color:#64748b">No active properties.</p>';
+    return;
+  }
+
+  grid.innerHTML = data.properties.map(p => {
+    const hasBid = p.top_bid !== null;
+    const amtClass = hasBid ? '' : 'no-bids';
+    const amtText  = hasBid ? fmt(p.top_bid.amount) : 'No bids yet';
+    const bidderBlock = hasBid
+      ? `<div class="r-bidder">${p.top_bid.name}</div>
+         <div class="r-paddle">Paddle #${p.top_bid.paddle_number}</div>`
+      : '';
+    return `
+      <div class="relay-card ${hasBid ? 'has-bids' : ''}">
+        <div class="r-address">${p.address}</div>
+        ${p.parcel_number ? `<div class="r-parcel">Parcel #${p.parcel_number}</div>` : ''}
+        <div class="r-bid-amount ${amtClass}">${amtText}</div>
+        ${bidderBlock}
+        <div class="r-starting">Starting bid: ${fmt(p.starting_bid)}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderActivity(data) {
+  const list = document.getElementById('activity-list');
+  if (!data.recent_activity.length) {
+    list.innerHTML = '<li style="color:#64748b;padding:0.5rem">No bids yet.</li>';
+    return;
+  }
+  list.innerHTML = data.recent_activity.map(b => `
+    <li class="activity-item">
+      <div>
+        <span class="a-amount">${fmt(b.amount)}</span>
+        &mdash; ${b.address}
+      </div>
+      <div class="a-meta">${b.name} (Paddle #${b.paddle_number}) &bull; ${b.timestamp.replace('T',' ').slice(0,19)}</div>
+    </li>`).join('');
+}
+
+async function refresh() {
+  try {
+    const resp = await fetch('{{ url_for("relay_data") }}');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    renderGrid(data);
+    renderActivity(data);
+    document.getElementById('last-updated').textContent = 'Updated ' + data.updated_at;
+  } catch (e) {
+    document.getElementById('last-updated').textContent = 'Connection error — retrying…';
+  }
+}
+
+refresh();
+setInterval(refresh, 4000);
+</script>
+{% endblock %}
