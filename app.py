@@ -170,7 +170,17 @@ def bid_data():
                ORDER BY b.amount DESC LIMIT 1''',
             (prop['id'],)
         ).fetchone()
-        result[prop['id']] = dict(top_bid) if top_bid else None
+        history = db.execute(
+            '''SELECT amount, timestamp
+               FROM bids
+               WHERE property_id = ?
+               ORDER BY timestamp DESC''',
+            (prop['id'],)
+        ).fetchall()
+        result[prop['id']] = {
+            'top_bid': dict(top_bid) if top_bid else None,
+            'history': [dict(b) for b in history],
+        }
     return jsonify(result)
 
 

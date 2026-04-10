@@ -59,11 +59,18 @@
               {% endif %}
             </p>
 
-            <p style="font-size:0.8rem;color:#6b7280"
-               id="start-{{ prop.id }}"
-               data-starting="{{ prop.starting_bid }}">
+            <p style="font-size:0.8rem;color:#6b7280;margin-bottom:0.6rem">
               Starting bid: ${{ '{:,.2f}'.format(prop.starting_bid) }}
             </p>
+
+            <div id="history-{{ prop.id }}">
+              {% if item.top_bid %}
+                <p class="bid-label" style="margin-bottom:0.35rem">Bid History</p>
+                <ol class="bid-history" reversed>
+                  {# history pulled from initial page load — JS keeps this updated #}
+                </ol>
+              {% endif %}
+            </div>
           </div>
 
           <div class="prop-card-footer">
@@ -95,16 +102,38 @@ function fmt(n) {
   return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
+function renderHistory(propId, history) {
+  const container = document.getElementById('history-' + propId);
+  if (!container) return;
+
+  if (!history || !history.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const items = history.map((b, i) =>
+    `<li style="font-size:0.85rem;padding:0.15rem 0;color:${i === 0 ? 'var(--green)' : 'var(--muted)'}">
+      ${fmt(b.amount)}
+    </li>`
+  ).join('');
+
+  container.innerHTML =
+    `<p class="bid-label" style="margin-bottom:0.35rem">Bid History</p>
+     <ol class="bid-history" reversed style="padding-left:1.25rem">${items}</ol>`;
+}
+
 async function refreshBids() {
   try {
     const resp = await fetch('{{ url_for("bid_data") }}');
     if (!resp.ok) return;
     const data = await resp.json();
 
-    for (const [propId, topBid] of Object.entries(data)) {
+    for (const [propId, entry] of Object.entries(data)) {
       const amtEl = document.getElementById('amt-' + propId);
       const byEl  = document.getElementById('by-'  + propId);
       if (!amtEl) continue;
+
+      const topBid = entry.top_bid;
 
       if (topBid) {
         const isMe = topBid.paddle_number === MY_PADDLE;
@@ -119,6 +148,8 @@ async function refreshBids() {
         amtEl.className = 'bid-amount no-bids';
         byEl.innerHTML = '';
       }
+
+      renderHistory(propId, entry.history);
     }
 
     document.getElementById('live-status').textContent =
@@ -128,7 +159,8 @@ async function refreshBids() {
   }
 }
 
-// Poll every 4 seconds
+// Run once immediately so history shows on first load, then poll every 4s
+refreshBids();
 setInterval(refreshBids, 4000);
 </script>
 {% endblock %}
