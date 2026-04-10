@@ -10,14 +10,20 @@
 
 {% block content %}
 <div class="page">
-  <h1 class="page-title">Active Properties</h1>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.5rem">
+    <h1 class="page-title" style="margin-bottom:0">Active Properties</h1>
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:#6b7280">
+      <div id="live-dot" style="width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite"></div>
+      <span id="live-status">Live</span>
+    </div>
+  </div>
 
   {% if properties %}
     <div class="prop-grid">
       {% for item in properties %}
         {% set prop    = item.property %}
         {% set top_bid = item.top_bid %}
-        <div class="prop-card">
+        <div class="prop-card" id="prop-{{ prop.id }}">
           <div class="prop-card-header">
             <div class="address">{{ prop.address }}</div>
             {% if prop.parcel_number %}
@@ -34,23 +40,28 @@
 
             <div class="bid-row">
               <span class="bid-label">Current High Bid</span>
-              {% if top_bid %}
-                <span class="bid-amount">${{ '{:,.2f}'.format(top_bid.amount) }}</span>
-              {% else %}
-                <span class="bid-amount no-bids">No bids yet</span>
-              {% endif %}
+              <span class="bid-amount {% if not top_bid %}no-bids{% endif %}"
+                    id="amt-{{ prop.id }}">
+                {% if top_bid %}
+                  ${{ '{:,.2f}'.format(top_bid.amount) }}
+                {% else %}
+                  No bids yet
+                {% endif %}
+              </span>
             </div>
 
-            {% if top_bid %}
-              <p class="bid-by">
+            <p class="bid-by" id="by-{{ prop.id }}">
+              {% if top_bid %}
                 High bidder: Paddle #{{ top_bid.paddle_number }}
                 {% if top_bid.paddle_number == session.paddle_number %}
                   <strong style="color:var(--green)">(You)</strong>
                 {% endif %}
-              </p>
-            {% endif %}
+              {% endif %}
+            </p>
 
-            <p style="font-size:0.8rem;color:#6b7280;">
+            <p style="font-size:0.8rem;color:#6b7280"
+               id="start-{{ prop.id }}"
+               data-starting="{{ prop.starting_bid }}">
               Starting bid: ${{ '{:,.2f}'.format(prop.starting_bid) }}
             </p>
           </div>
@@ -72,10 +83,52 @@
   {% else %}
     <div class="card" style="text-align:center;padding:3rem;color:#6b7280;">
       <p style="font-size:1.1rem">No active properties at this time.</p>
-      <p style="font-size:0.85rem;margin-top:0.5rem">
-        Check back once the auction begins.
-      </p>
+      <p style="font-size:0.85rem;margin-top:0.5rem">Check back once the auction begins.</p>
     </div>
   {% endif %}
 </div>
+
+<script>
+const MY_PADDLE = "{{ session.paddle_number }}";
+
+function fmt(n) {
+  return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+async function refreshBids() {
+  try {
+    const resp = await fetch('{{ url_for("bid_data") }}');
+    if (!resp.ok) return;
+    const data = await resp.json();
+
+    for (const [propId, topBid] of Object.entries(data)) {
+      const amtEl = document.getElementById('amt-' + propId);
+      const byEl  = document.getElementById('by-'  + propId);
+      if (!amtEl) continue;
+
+      if (topBid) {
+        const isMe = topBid.paddle_number === MY_PADDLE;
+        amtEl.textContent = fmt(topBid.amount);
+        amtEl.className = 'bid-amount';
+        amtEl.style.color = isMe ? 'var(--green)' : '';
+
+        byEl.innerHTML = 'High bidder: Paddle #' + topBid.paddle_number +
+          (isMe ? ' <strong style="color:var(--green)">(You)</strong>' : '');
+      } else {
+        amtEl.textContent = 'No bids yet';
+        amtEl.className = 'bid-amount no-bids';
+        byEl.innerHTML = '';
+      }
+    }
+
+    document.getElementById('live-status').textContent =
+      'Updated ' + new Date().toLocaleTimeString();
+  } catch (e) {
+    document.getElementById('live-status').textContent = 'Reconnecting…';
+  }
+}
+
+// Poll every 4 seconds
+setInterval(refreshBids, 4000);
+</script>
 {% endblock %}

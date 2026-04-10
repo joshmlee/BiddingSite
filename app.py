@@ -153,6 +153,27 @@ def bid():
     return render_template('bid.html', properties=result)
 
 
+@app.route('/bid/data')
+@require_bidder
+def bid_data():
+    """JSON endpoint polled by the bidder page to keep bid amounts live."""
+    db = get_db()
+    properties = db.execute(
+        'SELECT id FROM properties WHERE active = 1'
+    ).fetchall()
+    result = {}
+    for prop in properties:
+        top_bid = db.execute(
+            '''SELECT b.amount, bi.paddle_number
+               FROM bids b JOIN bidders bi ON b.bidder_id = bi.id
+               WHERE b.property_id = ?
+               ORDER BY b.amount DESC LIMIT 1''',
+            (prop['id'],)
+        ).fetchone()
+        result[prop['id']] = dict(top_bid) if top_bid else None
+    return jsonify(result)
+
+
 @app.route('/bid/submit', methods=['POST'])
 @require_bidder
 def submit_bid():
