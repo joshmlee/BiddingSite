@@ -102,6 +102,33 @@ function fmt(n) {
   return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
+function renderConfirmed(propId, confirmed) {
+  const card = document.getElementById('prop-' + propId);
+  if (!card) return;
+  let banner = card.querySelector('.confirmed-banner');
+
+  if (!confirmed) {
+    if (banner) banner.remove();
+    return;
+  }
+
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'confirmed-banner';
+    // Insert at top of card body
+    const body = card.querySelector('.prop-card-body');
+    body.insertBefore(banner, body.firstChild);
+  }
+
+  if (confirmed.is_mine) {
+    banner.className = 'confirmed-banner winner';
+    banner.innerHTML = '&#127942; Your bid has been confirmed as the winner!';
+  } else {
+    banner.className = 'confirmed-banner sold';
+    banner.innerHTML = 'A winner has been confirmed for this property.';
+  }
+}
+
 function renderHistory(propId, history) {
   const container = document.getElementById('history-' + propId);
   if (!container) return;
@@ -150,6 +177,7 @@ async function refreshBids() {
       }
 
       renderHistory(propId, entry.history);
+      renderConfirmed(propId, entry.confirmed);
     }
 
     document.getElementById('live-status').textContent =

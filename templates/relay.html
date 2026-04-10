@@ -69,13 +69,32 @@ function renderGrid(data) {
       ? `<div class="r-bidder">${p.top_bid.name}</div>
          <div class="r-paddle">Paddle #${p.top_bid.paddle_number}</div>`
       : '';
+
+    let confirmedBlock = '';
+    let confirmBtn = '';
+    if (p.confirmed) {
+      confirmedBlock = `
+        <div class="r-confirmed">
+          &#10003; CONFIRMED WINNER: ${p.confirmed.name} (Paddle #${p.confirmed.paddle_number}) &mdash; ${fmt(p.confirmed.amount)}
+        </div>`;
+      confirmBtn = `
+        <button class="btn btn-sm btn-danger" style="margin-top:0.75rem"
+                onclick="unconfirmBid(${p.id})">Undo Confirmation</button>`;
+    } else if (hasBid) {
+      confirmBtn = `
+        <button class="btn btn-sm btn-confirm" style="margin-top:0.75rem"
+                onclick="confirmBid(${p.id})">Confirm Highest Bid</button>`;
+    }
+
     return `
-      <div class="relay-card ${hasBid ? 'has-bids' : ''}">
+      <div class="relay-card ${hasBid ? 'has-bids' : ''} ${p.confirmed ? 'is-confirmed' : ''}">
         <div class="r-address">${p.address}</div>
         ${p.parcel_number ? `<div class="r-parcel">Parcel #${p.parcel_number}</div>` : ''}
         <div class="r-bid-amount ${amtClass}">${amtText}</div>
         ${bidderBlock}
+        ${confirmedBlock}
         <div class="r-starting">Starting bid: ${fmt(p.starting_bid)}</div>
+        ${confirmBtn}
       </div>`;
   }).join('');
 }
@@ -107,6 +126,16 @@ async function refresh() {
   } catch (e) {
     document.getElementById('last-updated').textContent = 'Connection error — retrying…';
   }
+}
+
+async function confirmBid(propId) {
+  await fetch(`/admin/properties/${propId}/confirm`, {method: 'POST'});
+  refresh();
+}
+
+async function unconfirmBid(propId) {
+  await fetch(`/admin/properties/${propId}/unconfirm`, {method: 'POST'});
+  refresh();
 }
 
 refresh();

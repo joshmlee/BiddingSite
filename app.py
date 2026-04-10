@@ -52,13 +52,14 @@ def init_db():
             created_at       TEXT    NOT NULL DEFAULT (datetime('now'))
         );
         CREATE TABLE IF NOT EXISTS properties (
-            id             INTEGER PRIMARY KEY AUTOINCREMENT,
-            address        TEXT    NOT NULL,
-            parcel_number  TEXT,
-            description    TEXT,
-            starting_bid   REAL    NOT NULL DEFAULT 0,
-            active         INTEGER NOT NULL DEFAULT 1,
-            created_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+            id                INTEGER PRIMARY KEY AUTOINCREMENT,
+            address           TEXT    NOT NULL,
+            parcel_number     TEXT,
+            description       TEXT,
+            starting_bid      REAL    NOT NULL DEFAULT 0,
+            active            INTEGER NOT NULL DEFAULT 1,
+            confirmed_bid_id  INTEGER REFERENCES bids(id),
+            created_at        TEXT    NOT NULL DEFAULT (datetime('now'))
         );
         CREATE TABLE IF NOT EXISTS bids (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +69,12 @@ def init_db():
             timestamp   TEXT    NOT NULL DEFAULT (datetime('now'))
         );
     ''')
-    db.commit()
+    # Add confirmed_bid_id to existing databases that predate this column
+    try:
+        db.execute('ALTER TABLE properties ADD COLUMN confirmed_bid_id INTEGER REFERENCES bids(id)')
+        db.commit()
+    except sqlite3.OperationalError:
+        pass  # column already exists
 
 
 with app.app_context():
@@ -177,9 +183,22 @@ def bid_data():
                ORDER BY timestamp DESC''',
             (prop['id'],)
         ).fetchall()
+        confirmed = None
+        if prop['confirmed_bid_id']:
+            row = db.execute(
+                '''SELECT b.amount, b.bidder_id
+                   FROM bids b WHERE b.id = ?''',
+                (prop['confirmed_bid_id'],)
+            ).fetchone()
+            if row:
+                confirmed = {
+                    'amount': row['amount'],
+                    'is_mine': row['bidder_id'] == session['bidder_id'],
+                }
         result[prop['id']] = {
             'top_bid': dict(top_bid) if top_bid else None,
             'history': [dict(b) for b in history],
+            'confirmed': confirmed,
         }
     return jsonify(result)
 
@@ -241,18 +260,27 @@ def relay_data():
     result = []
     for prop in properties:
         top_bid = db.execute(
-            '''SELECT b.amount, bi.name, bi.paddle_number, b.timestamp
+            '''SELECT b.id, b.amount, bi.name, bi.paddle_number, b.timestamp
                FROM bids b JOIN bidders bi ON b.bidder_id = bi.id
                WHERE b.property_id = ?
                ORDER BY b.amount DESC LIMIT 1''',
             (prop['id'],)
         ).fetchone()
+        confirmed = None
+        if prop['confirmed_bid_id']:
+            confirmed = db.execute(
+                '''SELECT b.id, b.amount, bi.name, bi.paddle_number
+                   FROM bids b JOIN bidders bi ON b.bidder_id = bi.id
+                   WHERE b.id = ?''',
+                (prop['confirmed_bid_id'],)
+            ).fetchone()
         result.append({
             'id': prop['id'],
             'address': prop['address'],
             'parcel_number': prop['parcel_number'] or '',
             'starting_bid': prop['starting_bid'],
             'top_bid': dict(top_bid) if top_bid else None,
+            'confirmed': dict(confirmed) if confirmed else None,
         })
 
     recent_activity = db.execute(
@@ -268,6 +296,38 @@ def relay_data():
         'recent_activity': [dict(r) for r in recent_activity],
         'updated_at': datetime.utcnow().strftime('%H:%M:%S UTC'),
     })
+
+
+# ---------------------------------------------------------------------------
+# Bid confirmation (admin action, surfaced on relay view)
+# ---------------------------------------------------------------------------
+
+@app.route('/admin/properties/<int:prop_id>/confirm', methods=['POST'])
+@require_admin
+def confirm_bid(prop_id):
+    """Confirm the current highest bid as the winner for this property."""
+    db = get_db()
+    top = db.execute(
+        '''SELECT b.id FROM bids b
+           WHERE b.property_id = ?
+           ORDER BY b.amount DESC LIMIT 1''',
+        (prop_id,)
+    ).fetchone()
+    if top:
+        db.execute('UPDATE properties SET confirmed_bid_id = ? WHERE id = ?',
+                   (top['id'], prop_id))
+        db.commit()
+    return ('', 204)
+
+
+@app.route('/admin/properties/<int:prop_id>/unconfirm', methods=['POST'])
+@require_admin
+def unconfirm_bid(prop_id):
+    """Remove the confirmed winner for this property."""
+    db = get_db()
+    db.execute('UPDATE properties SET confirmed_bid_id = NULL WHERE id = ?', (prop_id,))
+    db.commit()
+    return ('', 204)
 
 
 # ---------------------------------------------------------------------------

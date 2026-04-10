@@ -459,6 +459,45 @@ tbody tr:hover { background: #eff6ff; }
   margin-bottom: 0;
 }
 
+/* ---- Confirmed winner (relay view) ---- */
+.relay-card.is-confirmed {
+  border-left-color: var(--gold);
+}
+.r-confirmed {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(200, 160, 74, 0.18);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+.btn-confirm {
+  background: var(--gold);
+  color: #fff;
+}
+.btn-confirm:hover { filter: brightness(1.1); }
+
+/* ---- Confirmed winner (bidder view) ---- */
+.confirmed-banner {
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.confirmed-banner.winner {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+.confirmed-banner.sold {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid var(--border);
+}
+
 /* Responsive tweaks */
 @media (max-width: 600px) {
   .relay-card .r-bid-amount { font-size: 1.8rem; }
